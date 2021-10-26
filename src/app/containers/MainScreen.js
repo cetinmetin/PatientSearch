@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
 import { Searchbar } from 'react-native-paper';
 import { Dropdown, Button } from 'react-bootstrap';
@@ -7,40 +7,47 @@ import SelectBox from 'react-native-multi-selectbox'
 import { xorBy } from 'lodash'
 import { Table, TableWrapper, Row, Rows } from '../components/table';
 
+import { useDispatch } from "react-redux";
+import store from '../redux/store';
+import { setSearchParameters, setName } from '../redux/actions/actions'
+import { GETFromApi } from '../api/apiHelper'
+
 export default function MainScreen() {
+    const dispatch = useDispatch()
+    store.subscribe(() => {
+        setSelectedParameters(store.getState().userReducer.searchParameters);
+        setTableData(store.getState().userReducer.tableData)
+    })
     const [searchQuery, setSearchQuery] = React.useState('');
-    const [selectedTeams, setSelectedTeams] = React.useState([])
+    const [selectedParameters, setSelectedParameters] = React.useState([])
+    const [tableData, setTableData] = React.useState([])
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
     const K_OPTIONS = [
         {
             item: 'Given Name',
-            id: 'JUVE',
+            id: 'given',
         },
         {
             item: 'Familiy Name',
-            id: 'RM',
-        },
-        {
-            item: 'ID',
-            id: 'BR',
+            id: 'family',
         },
         {
             item: 'National ID',
-            id: 'BR20',
+            id: 'id',
         }
     ]
     const tableHead = ['Patient Name', 'Family Name', 'National ID', 'Gender', 'Phone', 'Address']
     const tableTitle = ['Title', 'Title2', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4']
-    const tableData = [
-        // ['1', '2', '3', '2', '3', '2'],
-    ]
+    // const tableData = [
+    //     // ['1', '2', '3', '2', '3', '2'],
+    // ]
 
     function onMultiChange() {
-        return (item) => setSelectedTeams(xorBy(selectedTeams, [item], 'id'))
+        return (item) => { dispatch(setSearchParameters((xorBy(selectedParameters, [item], 'id')))) }
+
     }
     const onChangeSearch = query => setSearchQuery(query);
-
     return (
         <View>
             <View class="row">
@@ -55,7 +62,7 @@ export default function MainScreen() {
                     <SelectBox
                         label=""
                         options={K_OPTIONS}
-                        selectedValues={selectedTeams}
+                        selectedValues={selectedParameters}
                         onMultiSelect={onMultiChange()}
                         onTapClose={onMultiChange()}
                         isMulti
@@ -67,7 +74,7 @@ export default function MainScreen() {
                     />
                 </View>
             </View>
-            <Button variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => { GETFromApi(searchQuery,selectedParameters) }}>
                 Search
             </Button>
             <ScrollView style={{ height: windowHeight * 0.4, marginVertical: "2%", width: windowWidth * 0.4 }}>
@@ -81,7 +88,7 @@ export default function MainScreen() {
                 </Table>
             </ScrollView>
             <StatusBar style="auto" />
-        </View>
+        </View >
     )
 }
 
