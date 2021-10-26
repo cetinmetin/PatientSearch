@@ -1,7 +1,9 @@
-import { SEARCH_NAME } from '../actions/actionTypes'
+import { SEARCH_NAME, SEARCH_PARAMETERS, SET_TABLE_DATA, RESET_TABLE_DATA } from '../actions/actionTypes'
 
 const initialState = {
-    name: ''
+    name: '',
+    searchParameters: [],
+    tableData: [[]]
 }
 
 export default (payload = initialState, action) => {
@@ -10,6 +12,21 @@ export default (payload = initialState, action) => {
             return {
                 ...payload,
                 name: action.status
+            }
+        case SEARCH_PARAMETERS:
+            return {
+                ...payload,
+                searchParameters: action.status
+            }
+        case SET_TABLE_DATA:
+            return {
+                ...payload,
+                tableData: action.status
+            }
+        case RESET_TABLE_DATA:
+            return {
+                ...payload,
+                tableData: [[]]
             }
         default:
             return payload
