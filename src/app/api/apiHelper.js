@@ -1,27 +1,22 @@
 import store from '../redux/store'
+import { Alert } from 'react-native'
 import { setTabledata, resetTableData } from '../redux/actions/actions'
+
 export async function GETFromApi(searchQuery, selectedParameters) {
     try {
         if (selectedParameters.length > 0 && searchQuery.length >= 2) {
             store.dispatch(resetTableData())
             let informations = [[]]
             let index = 0
-            let idSearch = false
-            let url,idIndex, givenIndex, familyIndex;
+            let url,idIndex
+            let searchQueryContainNumber = hasNumber(searchQuery)
             selectedParameters.map((item, index) => {
                 if (item.id == 'id') {
                     idIndex = index
-                    idSearch = true
-                }
-                else if (item.id == 'given') {
-                    givenIndex = index
-                }
-                else if (item.id == 'family') {
-                    familyIndex = index
                 }
             })
             for (let i = 0; i < selectedParameters.length; i++) {
-                if (givenIndex == i || familyIndex == i) {
+                if (!searchQueryContainNumber && i != idIndex) {
                     url = `https://fhir.imagerad.com/dummy/Patient/?${selectedParameters[i].id}=*${searchQuery}*`
                     let response = await fetch(url);
                     let responseApi = await response.json();
@@ -33,8 +28,7 @@ export async function GETFromApi(searchQuery, selectedParameters) {
                         })
                     }
                 }
-
-                if (searchQuery.length == 11 && idIndex == i) {
+                if (searchQueryContainNumber) {
                     url = `https://fhir.imagerad.com/dummy/Patient/?id=${searchQuery}`
                     let response = await fetch(url);
                     let responseApi = await response.json();
@@ -48,12 +42,15 @@ export async function GETFromApi(searchQuery, selectedParameters) {
                     }
                 }
             }
-            store.dispatch(setTabledata(informations))
+            store.dispatch(setTabledata(informations));
         }
         else {
-            console.log('Check Parameters and Search Keys')
+            Alert.alert('Warning', 'Check Parameters and Search Keys')
         }
     } catch (e) {
         console.log("Error when GETFromApi" + e)
     }
+}
+function hasNumber(myString) {
+    return /\d/.test(myString);
 }
