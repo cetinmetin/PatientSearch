@@ -6,7 +6,6 @@ import { MainScreen } from './src/app/containers'
 import store from './src/app/redux/store'
 import { Provider } from 'react-redux'
 import { theme } from './src/app/core/theme'
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function App() {
   return (
@@ -24,7 +23,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: "2%"
   },
 });
