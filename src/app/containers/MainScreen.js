@@ -1,16 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions, Button } from 'react-native';
 import { Searchbar } from 'react-native-paper';
-import { Dropdown, Button } from 'react-bootstrap';
 import SelectBox from 'react-native-multi-selectbox'
 import { xorBy } from 'lodash'
 import { Table, TableWrapper, Row, Rows } from '../components/table';
 
 import { useDispatch } from "react-redux";
 import store from '../redux/store';
-import { setSearchParameters, setName } from '../redux/actions/actions'
+import { setSearchParameters } from '../redux/actions/actions'
 import { GETFromApi } from '../api/apiHelper'
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 export default function MainScreen() {
     const dispatch = useDispatch()
@@ -21,8 +23,8 @@ export default function MainScreen() {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [selectedParameters, setSelectedParameters] = React.useState([])
     const [tableData, setTableData] = React.useState([])
-    const windowWidth = Dimensions.get('window').width;
-    const windowHeight = Dimensions.get('window').height;
+    const widthArr = [windowWidth * 0.4, windowWidth * 0.4,
+    windowWidth * 0.4, windowWidth * 0.4, windowWidth * 0.4, windowWidth * 0.4]
     const K_OPTIONS = [
         {
             item: 'Given Name',
@@ -38,16 +40,13 @@ export default function MainScreen() {
         }
     ]
     const tableHead = ['Patient Name', 'Family Name', 'National ID', 'Gender', 'Phone', 'Address']
-    const tableTitle = ['Title', 'Title2', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4', 'Title3', 'Title4', 'Title2', 'Title3', 'Title4']
-    // const tableData = [
-    //     // ['1', '2', '3', '2', '3', '2'],
-    // ]
 
     function onMultiChange() {
         return (item) => { dispatch(setSearchParameters((xorBy(selectedParameters, [item], 'id')))) }
 
     }
     const onChangeSearch = query => setSearchQuery(query);
+
     return (
         <View>
             <View class="row">
@@ -74,18 +73,34 @@ export default function MainScreen() {
                     />
                 </View>
             </View>
-            <Button variant="primary" size="lg" onClick={() => { GETFromApi(searchQuery,selectedParameters) }}>
-                Search
-            </Button>
-            <ScrollView style={{ height: windowHeight * 0.4, marginVertical: "2%", width: windowWidth * 0.4 }}>
-                <Table style={styles.containerTable}>
-                    <Row data={tableHead} flexArr={[1, 1, 1, 1]} style={styles.head} textStyle={styles.text} />
-
-                    <TableWrapper style={styles.wrapper}>
-                        <Rows data={tableData} flexArr={[1, 1, 1]} style={styles.row} textStyle={styles.text} />
-                    </TableWrapper>
-
-                </Table>
+            <View>
+                <Button
+                    onPress={() => { GETFromApi(searchQuery, selectedParameters) }}
+                    title="Search"
+                    color="blue"
+                />
+            </View>
+            <ScrollView horizontal={true} style={styles.container}>
+                <View style={{ flex: 1, height: windowHeight * 0.4, alignSelf: "center" }}>
+                    <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+                        <Row data={tableHead} widthArr={widthArr} style={styles.header} textStyle={styles.text} />
+                    </Table>
+                    <ScrollView style={styles.dataWrapper}>
+                        <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+                            {
+                                tableData.map((rowData, index) => (
+                                    <Row
+                                        key={index}
+                                        data={rowData}
+                                        widthArr={widthArr}
+                                        style={[styles.row, index % 2 && { backgroundColor: '#F7F6E7' }]}
+                                        textStyle={styles.text}
+                                    />
+                                ))
+                            }
+                        </Table>
+                    </ScrollView>
+                </View>
             </ScrollView>
             <StatusBar style="auto" />
         </View >
@@ -93,11 +108,9 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: '#fff' },
-    containerTable: { flex: 1, backgroundColor: '#fff', height: 20 },
-    head: { height: 40, backgroundColor: '#f1f8ff' },
-    wrapper: { flexDirection: 'row' },
-    title: { flex: 1, backgroundColor: '#f6f8fa' },
-    row: { height: 28 },
-    text: { textAlign: 'center' }
+    container: { paddingTop: 10, backgroundColor: '#fff' },
+    header: { height: 50, backgroundColor: 'aqua' },
+    text: { textAlign: 'center', fontWeight: '100' },
+    dataWrapper: { marginTop: -1 },
+    row: { height: 40, backgroundColor: '#E7E6E1' }
 });
